@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: usermanager_postgres
+    environment:
+      POSTGRES_USER: usermanager
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: usermanagerdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - usermanager_network
+
+  app:
+    build: .
+    container_name: usermanager_app
+    working_dir: /usr/src/app
+    command: npm run start:dev
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3000:3000'
+      - '5555:5555'
+    depends_on:
+      - db
+    networks:
+      - usermanager_network
+
+volumes:
+  postgres_data:
+
+networks:
+  usermanager_network:
