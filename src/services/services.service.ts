@@ -29,7 +29,7 @@ export class ServicesService {
   }
 
   async remove(id: string) {
-    return this.prisma.service.remove({
+    return this.prisma.service.delete({
       where: { id },
     });
   }

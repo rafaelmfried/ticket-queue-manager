@@ -13,43 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String     @id @default(uuid())
-  name      String
-  attendant Attendant?
-  manager   Manager?
-}
-
-model Services {
-  id          String      @id @default(uuid())
-  name        String      @unique
-  attendants  Attendant[] @relation("AttendantServices")
-  Attendant   Attendant?  @relation(fields: [attendantId], references: [id])
-  attendantId String?
-}
-
-model Attendant {
-  id          String      @id @default(uuid())
-  userId      String      @unique
-  user        User        @relation(fields: [userId], references: [id])
-  email       String      @unique
-  password    String
-  roles       Role[]
-  queueStatus QueueStatus
-  queueLimit  Int
-  services    Services[]  @relation("AttendantServices")
-  Services    Services[]
-}
-
-model Manager {
-  id       String @id @default(uuid())
-  userId   String @unique
-  user     User   @relation(fields: [userId], references: [id])
-  email    String @unique
-  password String
-  roles    Role[]
-}
-
 enum Role {
   ADMIN
   USER
@@ -59,5 +22,82 @@ enum Role {
 
 enum QueueStatus {
   OPEN
+  BUSY
   CLOSED
+}
+
+enum DocumentType {
+  RG
+  CPF
+}
+
+enum TicketStatus {
+  OPEN
+  PROCESSING
+  CLOSED
+}
+
+// model User {
+//   id          String   @id @default(uuid())
+//   name        String
+//   // attendant   Attendant? @relation(fields: [attendantId], references: [id])
+//   manager     Manager?
+//   attendantId String?
+// }
+
+model Client {
+  id             String       @id @default(uuid())
+  name           String
+  phone          String
+  documentType   DocumentType
+  documentNumber String
+  tickets        Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  attendants Attendant[] @relation("AttendantServices")
+  Ticket     Ticket[]
+}
+
+model Attendant {
+  id          String      @id @default(uuid())
+  // userId      String      @unique
+  // user        User        @relation(fields: [userId], references: [id])
+  name        String
+  email       String      @unique
+  password    String
+  roles       Role[]
+  queueStatus QueueStatus
+  queueLimit  Int
+  services    Service[]   @relation("AttendantServices")
+  Ticket      Ticket[]
+}
+
+// model Manager {
+//   id       String @id @default(uuid())
+//   userId   String @unique
+//   user     User   @relation(fields: [userId], references: [id])
+//   email    String @unique
+//   password String
+//   roles    Role[]
+// }
+
+model Ticket {
+  id          String       @id @default(uuid())
+  serviceId   String
+  attendantId String
+  clientId    String
+  status      TicketStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client    Client    @relation(fields: [clientId], references: [id])
+  Service   Service   @relation(fields: [serviceId], references: [id])
+  Attendant Attendant @relation(fields: [attendantId], references: [id])
 }

@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { PrismaService } from 'prisma/prisma.service';
+import { Ticket } from '@prisma/client';
 
 @Injectable()
 export class TicketsService {
-  create(createTicketDto: CreateTicketDto) {
-    return 'This action adds a new ticket';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: CreateTicketDto): Promise<Ticket> {
+    return this.prisma.ticket.create({
+      data,
+    });
   }
 
   findAll() {
@@ -17,6 +23,7 @@ export class TicketsService {
   }
 
   update(id: number, updateTicketDto: UpdateTicketDto) {
+    updateTicketDto;
     return `This action updates a #${id} ticket`;
   }
 
