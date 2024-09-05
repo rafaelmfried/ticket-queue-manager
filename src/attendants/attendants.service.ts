@@ -36,11 +36,11 @@ export class AttendantsService {
     return newAttendant;
   }
 
-  // async findAll(): Promise<Attendant[]> {
-  //   return this.prisma.attendant.findMany({
-  //     include: { services: true },
-  //   });
-  // }
+  async findAll(): Promise<Attendant[]> {
+    return this.prisma.attendant.findMany({
+      include: { services: true },
+    });
+  }
 
   // async findOne(id: string): Promise<Attendant> | null {
   //   return this.prisma.attendant.findUnique({

@@ -51,31 +51,38 @@ model Client {
   phone          String
   documentType   DocumentType
   documentNumber String
-  tickets        Ticket[]
+
+  tickets Ticket[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Service {
-  id         String      @id @default(uuid())
-  name       String      @unique
+  id   String @id @default(uuid())
+  name String @unique
+
+  Ticket Ticket[]
+
   attendants Attendant[] @relation("AttendantServices")
-  Ticket     Ticket[]
 }
 
 model Attendant {
-  id          String      @id @default(uuid())
+  id String @id @default(uuid())
+
   // userId      String      @unique
   // user        User        @relation(fields: [userId], references: [id])
+
   name        String
   email       String      @unique
   password    String
-  roles       Role[]
   queueStatus QueueStatus
   queueLimit  Int
-  services    Service[]   @relation("AttendantServices")
-  Ticket      Ticket[]
+
+  roles  Role[]
+  Ticket Ticket[]
+
+  services Service[] @relation("AttendantServices")
 }
 
 // model Manager {
@@ -88,11 +95,13 @@ model Attendant {
 // }
 
 model Ticket {
-  id          String       @id @default(uuid())
+  id String @id @default(uuid())
+
+  clientId    String
   serviceId   String
   attendantId String
-  clientId    String
-  status      TicketStatus
+
+  status TicketStatus
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

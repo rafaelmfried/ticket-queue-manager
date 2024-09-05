@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  // Get,
+  Get,
   Post,
   // Body,
   // Patch,
@@ -21,10 +21,10 @@ export class AttendantsController {
     return this.attendantService.create(createAttendantDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.attendantService.findAll();
-  // }
+  @Get()
+  findAll() {
+    return this.attendantService.findAll();
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

@@ -14,6 +14,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - usermanager_network
+    
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    networks:
+      - usermanager_network
 
   app:
     build: .
@@ -33,6 +42,8 @@ services:
 
 volumes:
   postgres_data:
+  redisdata:
 
 networks:
   usermanager_network:
+    driver: bridge

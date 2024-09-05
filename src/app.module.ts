@@ -4,19 +4,19 @@ import { AppService } from './app.service';
 import { AttendantsModule } from './attendants/attendants.module';
 import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/tickets.module';
-import { LinesModule } from './lines/lines.module';
 import { ServicesModule } from './services/services.module';
 import { PrismaService } from 'prisma/prisma.service';
 import { ClientsModule } from './clients/clients.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
     AttendantsModule,
     UsersModule,
     TicketsModule,
-    LinesModule,
     ServicesModule,
     ClientsModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
