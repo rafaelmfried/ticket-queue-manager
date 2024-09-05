@@ -5,7 +5,7 @@ import {
   Body,
   // Patch,
   Param,
-  // Delete,
+  Delete,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
@@ -35,21 +35,28 @@ export class QueueController {
     @Param('attendantId') attendantId: string,
     @Body('status') status: Array<'waiting' | 'active' | 'completed'>,
   ) {
-    return await this.queueService.addJob(attendantId, status);
+    const jobId = await this.queueService.addJob(attendantId, status);
+    return jobId;
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.queueService.findOne(+id);
-  // }
+  @Get(':attendantId/:status')
+  async getTickets(
+    @Param('attendantId') attendantId: string,
+    @Param('status') status: Array<'waiting' | 'active' | 'completed'>,
+  ) {
+    return this.queueService.getJobs(attendantId, status);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateQueueDto: UpdateQueueDto) {
   //   return this.queueService.update(+id, updateQueueDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.queueService.remove(+id);
-  // }
+  @Delete(':attendantId')
+  remove(
+    @Param('attendantId') attendantId: string,
+    @Body('jobId') jobId: string,
+  ) {
+    return this.queueService.removeJob(attendantId, jobId);
+  }
 }
