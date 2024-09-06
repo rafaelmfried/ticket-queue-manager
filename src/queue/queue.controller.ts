@@ -3,12 +3,15 @@ import {
   Get,
   Post,
   Body,
-  // Patch,
+  Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
+import { JobStatusDto } from './dto/jobs-info.dto';
+import { JobType as BullMQJobType } from 'bullmq';
 // import { UpdateQueueDto } from './dto/update-queue.dto';
 
 @Controller('queue')
@@ -33,24 +36,56 @@ export class QueueController {
   @Post(':attendantId/job')
   async addJob(
     @Param('attendantId') attendantId: string,
-    @Body('status') status: Array<'waiting' | 'active' | 'completed'>,
+    @Body('status') jobStatusDto: JobStatusDto,
   ) {
-    const jobId = await this.queueService.addJob(attendantId, status);
+    const jobId = await this.queueService.addJob(
+      attendantId,
+      jobStatusDto.status,
+    );
     return jobId;
   }
 
-  @Get(':attendantId/:status')
+  @Get(':attendantId/jobs')
   async getTickets(
     @Param('attendantId') attendantId: string,
-    @Param('status') status: Array<'waiting' | 'active' | 'completed'>,
+    @Query('status') status: string,
   ) {
-    return this.queueService.getJobs(attendantId, status);
+    const statusArray = status.split(',') as BullMQJobType[];
+    const validStatusArray: BullMQJobType[] = statusArray.filter((s) =>
+      [
+        'waiting',
+        'active',
+        'completed',
+        'failed',
+        'paused',
+        'repeat',
+        'wait',
+        'delayed',
+        'prioritized',
+        'waiting-children',
+      ].includes(s),
+    );
+    const jobStatusDto = new JobStatusDto();
+    jobStatusDto.status = validStatusArray;
+    return this.queueService.getJobs(attendantId, jobStatusDto);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateQueueDto: UpdateQueueDto) {
-  //   return this.queueService.update(+id, updateQueueDto);
-  // }
+  @Patch(':attendantId/jobs/:jobId')
+  async updateJob(
+    @Param('attendantId') attendantId: string,
+    @Param('jobId') jobId: string,
+    @Body() updates: { status: string; delay?: number },
+  ) {
+    const result = await this.queueService.updateJob(
+      attendantId,
+      jobId,
+      updates,
+    );
+    if (result.success) {
+      return { message: 'Job updated successfully' };
+    }
+    return { message: result.message };
+  }
 
   @Delete(':attendantId')
   remove(
