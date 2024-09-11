@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectionOptions, Queue } from 'bullmq';
 import { TicketsService } from 'src/tickets/tickets.service';
-import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class ProducerService {
   private queues: Map<string, Queue>;
 
-  constructor(
-    private ticketService: TicketsService,
-    private prisma: PrismaService,
-  ) {
+  constructor(private ticketService: TicketsService) {
     this.queues = new Map();
   }
 
