@@ -8,6 +8,7 @@ import { ServicesModule } from './services/services.module';
 import { PrismaService } from 'prisma/prisma.service';
 import { ClientsModule } from './clients/clients.module';
 import { QueueModule } from './queue/queue.module';
+import { WorkersModule } from './workers/workers.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { QueueModule } from './queue/queue.module';
     ServicesModule,
     ClientsModule,
     QueueModule,
+    WorkersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

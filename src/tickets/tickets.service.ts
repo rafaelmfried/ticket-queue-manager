@@ -9,25 +9,33 @@ export class TicketsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateTicketDto): Promise<Ticket> {
-    return this.prisma.ticket.create({
+    return await this.prisma.ticket.create({
       data,
     });
   }
 
-  findAll() {
-    return `This action returns all tickets`;
+  async findTicket(ticketId: string): Promise<Ticket | Error> {
+    return await this.prisma.ticket.findUniqueOrThrow({
+      where: { id: ticketId },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ticket`;
+  async findAll(): Promise<Ticket[]> {
+    return await this.prisma.ticket.findMany();
   }
 
-  update(id: number, updateTicketDto: UpdateTicketDto) {
-    updateTicketDto;
-    return `This action updates a #${id} ticket`;
+  async update(ticketId: string, data: UpdateTicketDto): Promise<Ticket> {
+    const { status } = data;
+
+    return await this.prisma.ticket.update({
+      where: { id: ticketId },
+      data: { status },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} ticket`;
+  async remove(ticketId: string): Promise<Ticket> {
+    return await this.prisma.ticket.delete({
+      where: { id: ticketId },
+    });
   }
 }

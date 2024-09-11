@@ -98,7 +98,7 @@ export class QueueService {
 
     try {
       // Obtém o próximo job disponível
-      const jobs = await queue.getJobs(['waiting']); // Pega jobs com status 'waiting'
+      const jobs = await queue.getJobs(['waiting']); // Pega zjobs com status 'waiting'
       if (jobs.length === 0) {
         console.log('Nenhum job disponível para processar');
         return;
@@ -114,7 +114,7 @@ export class QueueService {
 
   async processJob(job: Job<any, any, any>) {
     console.log(`Processando Job: ${job.id}`);
-    await job.moveToCompleted('Processado com sucesso');
+    // await job.moveToCompleted('Processado com sucesso');
   }
 
   async updateJob(attendantId: string, jobId: string, updates: any) {
