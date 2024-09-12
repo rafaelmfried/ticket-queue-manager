@@ -16,6 +16,9 @@ export class QueueService {
         connection: { host: 'redis', port: 6379 },
       });
       this.queues.set(name, queue);
+      console.log(`Fila ${name} criada e adicionada ao Map.`);
+    } else {
+      console.log(`Fila ${name} já existe.`);
     }
 
     const queue = this.queues.get(name);
@@ -30,12 +33,11 @@ export class QueueService {
     };
   }
 
-  async getQueue(attendantId: string): Promise<QueueInfoDto> {
-    const queue = this.queues.get(attendantId);
+  async getQueue(name: string): Promise<QueueInfoDto> {
+    const queue = this.queues.get(name);
+
     if (!queue) {
-      throw new NotFoundException(
-        `Queue for attendant ${attendantId} not found.`,
-      );
+      throw new NotFoundException(`Queue for attendant ${name} not found.`);
     }
 
     const ticketCount = await queue.getJobCounts();
@@ -43,10 +45,27 @@ export class QueueService {
 
     return {
       queue,
-      name: queue.name,
+      name,
       ticketCount,
       paused,
     };
+  }
+
+  async listQueues(): Promise<QueueInfoDto[]> {
+    const queueList: QueueInfoDto[] = [];
+
+    for (const [name, queue] of this.queues.entries()) {
+      const jobCounts = await queue.getJobCounts();
+      const isPaused = await queue.isPaused();
+
+      queueList.push({
+        name,
+        ticketCount: jobCounts,
+        paused: isPaused,
+      });
+    }
+
+    return queueList;
   }
 
   async addJob(attendantId: string, jobData: any): Promise<string> {

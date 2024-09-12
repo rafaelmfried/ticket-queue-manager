@@ -14,5 +14,6 @@ import { QueueController } from './queue.controller';
   ],
   controllers: [QueueController],
   providers: [QueueService],
+  exports: [QueueService],
 })
 export class QueueModule {}

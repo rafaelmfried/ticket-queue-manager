@@ -5,10 +5,10 @@ import { AttendantsModule } from './attendants/attendants.module';
 import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { ServicesModule } from './services/services.module';
-import { PrismaService } from 'prisma/prisma.service';
 import { ClientsModule } from './clients/clients.module';
 import { QueueModule } from './queue/queue.module';
 import { WorkersModule } from './workers/workers.module';
+import { PrismaModule } from 'prisma/prisma.module';
 
 @Module({
   imports: [
@@ -19,8 +19,9 @@ import { WorkersModule } from './workers/workers.module';
     ClientsModule,
     QueueModule,
     WorkersModule,
+    PrismaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}

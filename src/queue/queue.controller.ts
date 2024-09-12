@@ -7,34 +7,52 @@ import { JobStatusDto } from './dto/jobs-info.dto';
 export class QueueController {
   constructor(private readonly queueService: QueueService) {}
 
+  @Get()
+  async listQueues() {
+    return await this.queueService.listQueues();
+  }
+
   @Post()
-  createQueue(@Body() createQueueDto: CreateQueueDto) {
-    return this.queueService.createQueue(createQueueDto);
+  async createQueue(@Body() createQueueDto: CreateQueueDto) {
+    return await this.queueService.createQueue(createQueueDto);
   }
 
   @Get(':attendantId')
-  getQueue(@Param('attendantId') attendantId: string) {
-    return this.queueService.getQueue(attendantId);
+  async getQueue(@Param('attendantId') attendantId: string) {
+    const queueName =
+      (new CreateQueueDto().name = `attendant-queue-${attendantId}`);
+    const { queue, ...response } = await this.queueService.getQueue(queueName);
+    console.log(queue);
+    return response;
   }
 
   @Get(':attendantId/jobs')
-  getJobs(
+  async getJobs(
     @Param('attendantId') attendantId: string,
     @Body() jobStatusDto: JobStatusDto,
   ) {
-    return this.queueService.getJobs(attendantId, jobStatusDto);
+    const queueName =
+      (new CreateQueueDto().name = `attendant-queue-${attendantId}`);
+    return await this.queueService.getJobs(queueName, jobStatusDto);
   }
 
   @Post(':attendantId/jobs')
-  addJob(@Param('attendantId') attendantId: string, @Body() jobData: any) {
-    return this.queueService.addJob(attendantId, jobData);
+  async addJob(
+    @Param('attendantId') attendantId: string,
+    @Body() jobData: any,
+  ) {
+    const queueName =
+      (new CreateQueueDto().name = `attendant-queue-${attendantId}`);
+    return await this.queueService.addJob(queueName, jobData);
   }
 
   @Delete(':attendantId/jobs/:jobId')
-  removeJob(
+  async removeJob(
     @Param('attendantId') attendantId: string,
     @Param('jobId') jobId: string,
   ) {
-    return this.queueService.removeJob(attendantId, jobId);
+    const queueName =
+      (new CreateQueueDto().name = `attendant-queue-${attendantId}`);
+    return await this.queueService.removeJob(queueName, jobId);
   }
 }
