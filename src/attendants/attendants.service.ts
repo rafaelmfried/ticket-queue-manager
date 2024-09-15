@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { Attendant } from '@prisma/client';
+import { Attendant, Prisma } from '@prisma/client';
 import { CreateAttendantDto } from './dto/create-attendant.dto';
+import { WorkersService } from 'src/workers/workers.service';
 
 @Injectable()
 export class AttendantsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private workersService: WorkersService,
+  ) {}
 
   async create(data: CreateAttendantDto): Promise<Attendant> {
     const {
@@ -28,7 +32,7 @@ export class AttendantsService {
         queueStatus,
         queueLimit,
         services: {
-          connect: serviceIds.map((id) => ({ id })),
+          connect: serviceIds ? serviceIds.map((id) => ({ id })) : [],
         },
       },
     });
@@ -42,42 +46,62 @@ export class AttendantsService {
     });
   }
 
-  // async findOne(id: string): Promise<Attendant> | null {
-  //   return this.prisma.attendant.findUnique({
-  //     where: { id },
-  //     include: { services: true },
-  //   });
-  // }
+  // Função para mudar o status da fila do atendente
+  async changeQueueStatus(attendantId: string, status: 'OPEN' | 'CLOSED') {
+    // Atualiza o status da fila do atendente no banco de dados
+    const updatedAttendant = await this.prisma.attendant.update({
+      where: { id: attendantId },
+      data: { queueStatus: status },
+    });
+    const queueName = `attendant-queue-${attendantId}`;
+    // Chama o método do WorkersService para alterar o status da fila
+    await this.workersService.changeAttendantQueueStatus(queueName, status);
 
-  // async update(
-  //   id: string,
-  //   data: Prisma.AttendantUpdateInput,
-  // ): Promise<Attendant> {
-  //   const { services, ...attendantData } = data;
+    console.log(
+      `Atendente ${attendantId} teve o status da fila alterado para ${status}`,
+    );
+    return updatedAttendant;
+  }
 
-  //   let setArray: { id: string }[] = [];
-  //   if (Array.isArray(services?.set)) {
-  //     setArray = services.set.map((service) => ({ id: service.id }));
-  //   } else if (services?.set) {
-  //     setArray = [{ id: services.set.id }];
-  //   }
+  async findOne(id: string): Promise<Attendant> | null {
+    return this.prisma.attendant.findUnique({
+      where: { id },
+      include: { services: true },
+    });
+  }
 
-  //   return this.prisma.attendant.update({
-  //     where: { id },
-  //     data: {
-  //       ...attendantData,
-  //       services: {
-  //         set: setArray,
-  //       },
-  //     },
-  //     include: { services: true },
-  //   });
-  // }
+  async update(
+    id: string,
+    data: Prisma.AttendantUpdateInput,
+  ): Promise<Attendant> {
+    const { services, ...attendantData } = data;
 
-  // async remove(id: string): Promise<Attendant> {
-  //   return this.prisma.attendant.delete({
-  //     where: { id },
-  //     include: { services: true },
-  //   });
-  // }
+    // Verifique a estrutura correta para o campo services
+    let setArray: { id: string }[] = [];
+    if (services?.set) {
+      setArray = Array.isArray(services.set)
+        ? services.set.map((service) => ({ id: service.id }))
+        : [{ id: services.set.id }];
+    }
+
+    return this.prisma.attendant.update({
+      where: { id },
+      data: {
+        ...attendantData,
+        services: services
+          ? {
+              set: setArray,
+            }
+          : undefined,
+      },
+      include: { services: true },
+    });
+  }
+
+  async remove(id: string): Promise<Attendant> {
+    return this.prisma.attendant.delete({
+      where: { id },
+      include: { services: true },
+    });
+  }
 }

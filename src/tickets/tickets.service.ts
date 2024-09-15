@@ -4,7 +4,6 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { Ticket } from '@prisma/client';
 import { QueueService } from 'src/queue/queue.service';
-import { CreateQueueDto } from 'src/queue/dto/create-queue.dto';
 
 @Injectable()
 export class TicketsService {
@@ -27,25 +26,24 @@ export class TicketsService {
 
     console.log(`${attendant.name} | ${service.name}`);
 
-    const createQueueDto = new CreateQueueDto();
-    createQueueDto.name = queueName;
+    try {
+      const { queue } = await this.queueService.getQueue(queueName);
+      console.log(queue.name);
+      const ticket = await this.prisma.ticket.create({ data });
 
-    const { queue } = await this.queueService.createQueue(createQueueDto);
+      console.log(ticket);
 
-    console.log(queue.name);
-
-    const ticket = await this.prisma.ticket.create({ data });
-
-    console.log(ticket);
-
-    const jobId = await this.queueService.addJob(queueName, ticket);
-    console.log(jobId);
-    return {
-      ...ticket,
-      attendant: attendant.name,
-      service: service.name,
-      jobId,
-    };
+      const jobId = await this.queueService.addJob(queueName, ticket);
+      console.log(jobId);
+      return {
+        ...ticket,
+        attendant: attendant.name,
+        service: service.name,
+        jobId,
+      };
+    } catch (err) {
+      return new Error(`Queue is not OPEN ${err.message}`);
+    }
   }
 
   async findTicket(ticketId: string): Promise<Ticket> {

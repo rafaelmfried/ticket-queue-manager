@@ -68,36 +68,30 @@ export class QueueService {
     return queueList;
   }
 
-  async addJob(attendantId: string, jobData: any): Promise<string> {
-    const queue = this.queues.get(attendantId);
+  async addJob(name: string, jobData: any): Promise<string> {
+    const queue = this.queues.get(name);
     if (!queue) {
-      throw new NotFoundException(
-        `Queue for attendant ${attendantId} not found.`,
-      );
+      throw new NotFoundException(`Queue for attendant ${name} not found.`);
     }
 
     const job = await queue.add('process-job', jobData);
     return job.id;
   }
 
-  async getJobs(attendantId: string, jobStatusDto: JobStatusDto) {
-    const queue = this.queues.get(attendantId);
+  async getJobs(name: string, jobStatusDto: JobStatusDto) {
+    const queue = this.queues.get(name);
     if (!queue) {
-      throw new NotFoundException(
-        `Queue for attendant ${attendantId} not found.`,
-      );
+      throw new NotFoundException(`Queue for attendant ${name} not found.`);
     }
 
     const jobs = await queue.getJobs(jobStatusDto.status);
     return { jobs };
   }
 
-  async removeJob(attendantId: string, jobId: string) {
-    const queue = this.queues.get(attendantId);
+  async removeJob(name: string, jobId: string) {
+    const queue = this.queues.get(name);
     if (!queue) {
-      throw new NotFoundException(
-        `Queue for attendant ${attendantId} not found.`,
-      );
+      throw new NotFoundException(`Queue for attendant ${name} not found.`);
     }
 
     const job = await queue.getJob(jobId);
@@ -107,5 +101,16 @@ export class QueueService {
 
     await job.remove();
     return { success: true };
+  }
+
+  async removeQueue(queueName: string) {
+    const queue = this.queues.get(queueName);
+    if (queue) {
+      await queue.close();
+      this.queues.delete(queueName);
+      console.log(`Fila ${queueName} removida.`);
+    } else {
+      console.log(`Fila ${queueName} não encontrada.`);
+    }
   }
 }

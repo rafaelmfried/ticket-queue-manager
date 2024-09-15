@@ -6,7 +6,6 @@ import {
   IsEnum,
   IsInt,
   IsOptional,
-  ArrayNotEmpty,
 } from 'class-validator';
 
 export class ConnectServiceDto {
@@ -35,7 +34,6 @@ export class CreateAttendantDto {
   queueLimit: number;
 
   @IsOptional()
-  @ArrayNotEmpty()
   @IsString({ each: true })
   serviceIds?: string[];
 }
