@@ -2,10 +2,23 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { QueueController } from './queue.controller';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
+import { NotFoundException } from '@nestjs/common';
+import { JobStatusDto } from './dto/jobs-info.dto';
+import { Job } from 'bullmq';
 
 describe('QueueController', () => {
   let controller: QueueController;
   let service: QueueService;
+
+  const mockJob: Partial<Job<any, any, string>> = {
+    id: 'job1',
+    data: { test: 'data' },
+    // Adicione outras propriedades e métodos necessários aqui se você precisar
+  };
+
+  const mockJobResponse = {
+    jobs: [mockJob as unknown as Job, mockJob as unknown as Job],
+  };
 
   const mockQueueService = {
     listQueues: jest.fn(),
@@ -73,6 +86,44 @@ describe('QueueController', () => {
       expect(await controller.removeJob('1', 'job1')).toEqual({
         success: true,
       });
+    });
+  });
+
+  describe('getJobs', () => {
+    it('deve retornar os jobs da fila corretamente', async () => {
+      const attendantId = '123';
+      const queueName = `attendant-queue-${attendantId}`;
+      const jobStatusDto: JobStatusDto = { status: ['completed'] };
+
+      // Mockando o retorno do serviço
+      jest.spyOn(service, 'getJobs').mockResolvedValue(mockJobResponse);
+
+      const result = await controller.getJobs(attendantId, jobStatusDto);
+
+      // Verificar se o método do serviço foi chamado com o nome correto da fila e JobStatusDto
+      expect(service.getJobs).toHaveBeenCalledWith(queueName, jobStatusDto);
+
+      // Verificar se a resposta do controlador está correta
+      expect(result).toEqual(mockJobResponse);
+    });
+
+    it('deve lançar NotFoundException se a fila não for encontrada', async () => {
+      const attendantId = '123';
+      const queueName = `attendant-queue-${attendantId}`;
+      const jobStatusDto: JobStatusDto = { status: ['completed'] };
+
+      // Mock para lançar a exceção NotFoundException
+      jest
+        .spyOn(service, 'getJobs')
+        .mockRejectedValue(
+          new NotFoundException(`Queue for attendant ${queueName} not found.`),
+        );
+
+      await expect(
+        controller.getJobs(attendantId, jobStatusDto),
+      ).rejects.toThrow(
+        new NotFoundException(`Queue for attendant ${queueName} not found.`),
+      );
     });
   });
 });
